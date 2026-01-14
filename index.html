@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>稗官的游乐小天地</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'KaiTi', 'STKaiti', serif;
+            background: linear-gradient(135deg, #F4E4C1 0%, #E8D4A8 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            background: linear-gradient(to right, #C8553D, #B8463D);
+            padding: 12px 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .logo {
+            color: #F4E4C1;
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .level-display {
+            color: #F4E4C1;
+            font-size: 18px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: #F4E4C1;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        /* 游戏区域 */
+        .game-area {
+            background: rgba(255,255,255,0.9);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            margin-bottom: 15px;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 6px;
+            max-width: 600px;
+            margin: 0 auto;
+            aspect-ratio: 1;
+        }
+
+        .block {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .block:hover {
+            transform: scale(1.05);
+        }
+
+        .block.selected {
+            border: 3px solid #FFD700;
+            box-shadow: 0 0 15px rgba(255,215,0,0.6);
+            transform: scale(1.1);
+        }
+
+        .block.red { background: linear-gradient(135deg, #E74C3C, #C0392B); }
+        .block.orange { background: linear-gradient(135deg, #E67E22, #D35400); }
+        .block.yellow { background: linear-gradient(135deg, #F39C12, #D68910); }
+        .block.green { background: linear-gradient(135deg, #588B8B, #3E6D6D); }
+        .block.cyan { background: linear-gradient(135deg, #3498DB, #2980B9); }
+        .block.blue { background: linear-gradient(135deg, #4A5899, #3A4879); }
+        .block.purple { background: linear-gradient(135deg, #8B5A8E, #6B3A6E); }
+
+        /* 底部信息栏 */
+        .info-bar {
+            background: linear-gradient(to right, #588B8B, #4A5899);
+            padding: 15px 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #F4E4C1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .info-left, .info-right {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .score-display {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            height: 20px;
+            width: 200px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #F39C12, #E67E22);
+            height: 100%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+        }
+
+        .game-btn {
+            background: linear-gradient(135deg, #C8553D, #A8453D);
+            border: none;
+            color: #F4E4C1;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-family: 'KaiTi', serif;
+            transition: all 0.3s;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+
+        .game-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(0,0,0,0.3);
+        }
+
+        .game-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 初始页面 */
+        .start-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .game-title {
+            font-size: 48px;
+            color: #C8553D;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .start-btn {
+            font-size: 24px;
+            padding: 15px 40px;
+            margin: 10px;
+        }
+
+        /* 结算页面 */
+        .result-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #F4E4C1, #E8D4A8);
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+        }
+
+        .result-title {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #C8553D;
+        }
+
+        .result-score {
+            font-size: 24px;
+            margin: 15px 0;
+            color: #3D2818;
+        }
+
+        .result-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+
+        /* 粒子效果 */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            font-size: 20px;
+            font-weight: bold;
+            color: #F39C12;
+            animation: float-up 1s ease-out forwards;
+        }
+
+        @keyframes float-up {
+            to {
+                transform: translateY(-60px);
+                opacity: 0;
+            }
+        }
+
+        /* 连击显示 */
+        .combo-display {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            color: #E67E22;
+            font-weight: bold;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            animation: combo-pulse 0.5s ease-out;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        @keyframes combo-pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.3); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .game-title { font-size: 32px; }
+            .logo { font-size: 16px; }
+            .game-board { gap: 4px; }
+            .block { font-size: 18px; }
+            .progress-bar { width: 150px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航栏 -->
+        <div class="navbar" id="navbar" style="display: none;">
+            <div class="logo">📖 稗官的游乐小天地</div>
+            <div class="level-display" id="levelDisplay">第 1 关</div>
+            <div class="nav-buttons">
+                <button class="nav-btn" id="pauseBtn">⏸ 暂停</button>
+                <button class="nav-btn" id="soundBtn">🔊 音效</button>
+                <button class="nav-btn" id="exitBtn">🚪 退出</button>
+            </div>
+        </div>
+
+        <!-- 初始页面 -->
+        <div class="game-area" id="startScreen">
+            <div class="start-screen">
+                <div class="game-title">稗官的游乐小天地</div>
+                <div style="margin: 30px 0; color: #3D2818; font-size: 18px;">
+                    <p>消除相邻同色方块，达成目标分数！</p>
+                    <p style="margin-top: 10px;">历史最高分：<span id="highScore">0</span></p>
+                </div>
+                <button class="game-btn start-btn" id="startBtn">开始游戏</button>
+                <button class="game-btn start-btn" id="levelSelectBtn">选择关卡</button>
+            </div>
+        </div>
+
+        <!-- 游戏区域 -->
+        <div class="game-area" id="gameArea" style="display: none;">
+            <div class="game-board" id="gameBoard"></div>
+        </div>
+
+        <!-- 底部信息栏 -->
+        <div class="info-bar" id="infoBar" style="display: none;">
+            <div class="info-left">
+                <div class="score-display">得分: <span id="currentScore">0</span> / <span id="targetScore">100</span></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 100%;">
+                        <span id="progressText">30 步</span>
+                    </div>
+                </div>
+            </div>
+            <div class="info-right">
+                <button class="game-btn" id="hintBtn">💡 提示 (30s)</button>
+                <button class="game-btn" id="restartBtn">🔄 重新开始</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 结算页面 -->
+    <div class="result-overlay" id="resultOverlay">
+        <div class="result-card">
+            <div class="result-title" id="resultTitle">通关成功！</div>
+            <div class="result-score">本次得分: <span id="finalScore">0</span></div>
+            <div class="result-score" id="bonusDisplay"></div>
+            <div class="result-buttons">
+                <button class="game-btn" id="nextLevelBtn">下一关</button>
+                <button class="game-btn" id="replayBtn">重玩本关</button>
+                <button class="game-btn" id="backBtn">返回首页</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 游戏状态
+        const game = {
+            board: [],
+            selected: [],
+            score: 0,
+            level: 1,
+            moves: 30,
+            maxMoves: 30,
+            targetScore: 100,
+            combo: 0,
+            soundEnabled: true,
+            isPlaying: false,
+            hintCooldown: 0,
+            colors: ['red', 'orange', 'yellow', 'green']
+        };
+
+        // 关卡配置
+        const levels = [
+            { target: 100, moves: 30, colors: 4 },
+            { target: 200, moves: 28, colors: 5 },
+            { target: 350, moves: 26, colors: 6 },
+            { target: 500, moves: 24, colors: 6 },
+            { target: 700, moves: 22, colors: 7 }
+        ];
+
+        // 初始化游戏
+        function initGame() {
+            loadHighScore();
+            document.getElementById('startBtn').addEventListener('click', startGame);
+            document.getElementById('levelSelectBtn').addEventListener('click', showLevelSelect);
+            document.getElementById('restartBtn').addEventListener('click', resetLevel);
+            document.getElementById('hintBtn').addEventListener('click', showHint);
+            document.getElementById('exitBtn').addEventListener('click', exitGame);
+            document.getElementById('soundBtn').addEventListener('click', toggleSound);
+            document.getElementById('nextLevelBtn').addEventListener('click', nextLevel);
+            document.getElementById('replayBtn').addEventListener('click', resetLevel);
+            document.getElementById('backBtn').addEventListener('click', exitGame);
+        }
+
+        // 开始游戏
+        function startGame() {
+            game.level = 1;
+            setupLevel();
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('navbar').style.display = 'flex';
+            document.getElementById('gameArea').style.display = 'block';
+            document.getElementById('infoBar').style.display = 'flex';
+            game.isPlaying = true;
+        }
+
+        // 设置关卡
+        function setupLevel() {
+            const levelConfig = levels[game.level - 1];
+            game.targetScore = levelConfig.target;
+            game.moves = levelConfig.moves;
+            game.maxMoves = levelConfig.moves;
+            game.score = 0;
+            game.combo = 0;
+            
+            // 设置颜色数量
+            const colorNames = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple'];
+            game.colors = colorNames.slice(0, levelConfig.colors);
+            
+            updateUI();
+            createBoard();
+        }
+
+        // 创建游戏板
+        function createBoard() {
+            game.board = [];
+            const boardEl = document.getElementById('gameBoard');
+            boardEl.innerHTML = '';
+            
+            for (let i = 0; i < 8; i++) {
+                game.board[i] = [];
+                for (let j = 0; j < 8; j++) {
+                    const color = game.colors[Math.floor(Math.random() * game.colors.length)];
+                    game.board[i][j] = color;
+                    
+                    const block = document.createElement('div');
+                    block.className = `block ${color}`;
+                    block.dataset.row = i;
+                    block.dataset.col = j;
+                    block.textContent = getColorIcon(color);
+                    block.addEventListener('click', () => selectBlock(i, j));
+                    boardEl.appendChild(block);
+                }
+            }
+        }
+
+        // 获取颜色图标
+        function getColorIcon(color) {
+            const icons = {
+                red: '❤️', orange: '🧡', yellow: '💛',
+                green: '💚', cyan: '💙', blue: '💙', purple: '💜'
+            };
+            return icons[color] || '⭐';
+        }
+
+        // 选择方块
+        function selectBlock(row, col) {
+            if (!game.isPlaying) return;
+            
+            const color = game.board[row][col];
+            game.selected = [];
+            findConnected(row, col, color);
+            
+            if (game.selected.length >= 3) {
+                highlightSelected();
+            }
+        }
+
+        // 查找连接的方块
+        function findConnected(row, col, color, visited = new Set()) {
+            const key = `${row},${col}`;
+            if (visited.has(key)) return;
+            if (row < 0 || row >= 8 || col < 0 || col >= 8) return;
+            if (game.board[row][col] !== color) return;
+            
+            visited.add(key);
+            game.selected.push({row, col});
+            
+            findConnected(row - 1, col, color, visited);
+            findConnected(row + 1, col, color, visited);
+            findConnected(row, col - 1, color, visited);
+            findConnected(row, col + 1, color, visited);
+        }
+
+        // 高亮选中的方块
+        function highlightSelected() {
+            document.querySelectorAll('.block').forEach(b => b.classList.remove('selected'));
+            game.selected.forEach(({row, col}) => {
+                const block = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                if (block) block.classList.add('selected');
+            });
+            
+            setTimeout(() => eliminateBlocks(), 300);
+        }
+
+        // 消除方块
+        function eliminateBlocks() {
+            const count = game.selected.length;
+            let points = 0;
+            
+            if (count === 3) points = 10;
+            else if (count === 4) points = 25;
+            else if (count === 5) points = 50;
+            else points = 100 + (count - 6) * 20;
+            
+            game.combo++;
+            points += game.combo * 5;
+            game.score += points;
+            
+            // 显示得分动画
+            game.selected.forEach(({row, col}) => {
+                const block = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                if (block) {
+                    showScoreParticle(block, `+${points}`);
+                    block.style.opacity = '0';
+                }
+                game.board[row][col] = null;
+            });
+            
+            if (game.combo >= 3) {
+                showCombo(game.combo);
+            }
+            
+            game.moves--;
+            
+            setTimeout(() => {
+                dropBlocks();
+                fillBoard();
+                updateUI();
+                checkGameEnd();
+            }, 500);
+        }
+
+        // 方块下落
+        function dropBlocks() {
+            for (let col = 0; col < 8; col++) {
+                let emptyRow = 7;
+                for (let row = 7; row >= 0; row--) {
+                    if (game.board[row][col] !== null) {
+                        if (row !== emptyRow) {
+                            game.board[emptyRow][col] = game.board[row][col];
+                            game.board[row][col] = null;
+                        }
+                        emptyRow--;
+                    }
+                }
+            }
+        }
+
+        // 填充空位
+        function fillBoard() {
+            for (let col = 0; col < 8; col++) {
+                for (let row = 0; row < 8; row++) {
+                    if (game.board[row][col] === null) {
+                        game.board[row][col] = game.colors[Math.floor(Math.random() * game.colors.length)];
+                    }
+                }
+            }
+            renderBoard();
+        }
+
+        // 重新渲染游戏板
+        function renderBoard() {
+            const boardEl = document.getElementById('gameBoard');
+            boardEl.innerHTML = '';
+            
+            for (let i = 0; i < 8; i++) {
+                for (let j = 0; j < 8; j++) {
+                    const color = game.board[i][j];
+                    const block = document.createElement('div');
+                    block.className = `block ${color}`;
+                    block.dataset.row = i;
+                    block.dataset.col = j;
+                    block.textContent = getColorIcon(color);
+                    block.addEventListener('click', () => selectBlock(i, j));
+                    boardEl.appendChild(block);
+                }
+            }
+        }
+
+        // 更新UI
+        function updateUI() {
+            document.getElementById('levelDisplay').textContent = `第 ${game.level} 关`;
+            document.getElementById('currentScore').textContent = game.score;
+            document.getElementById('targetScore').textContent = game.targetScore;
+            document.getElementById('progressText').textContent = `${game.moves} 步`;
+            
+            const progress = (game.moves / game.maxMoves) * 100;
+            const fill = document.getElementById('progressFill');
+            fill.style.width = progress + '%';
+            
+            if (progress < 20) {
+                fill.style.background = 'linear-gradient(to right, #E74C3C, #C0392B)';
+            }
+        }
+
+        // 显示得分粒子
+        function showScoreParticle(element, text) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.textContent = text;
+            particle.style.left = element.offsetLeft + element.offsetWidth / 2 + 'px';
+            particle.style.top = element.offsetTop + 'px';
+            document.getElementById('gameArea').appendChild(particle);
+            
+            setTimeout(() => particle.remove(), 1000);
+        }
+
+        // 显示连击
+        function showCombo(count) {
+            const combo = document.createElement('div');
+            combo.className = 'combo-display';
+            combo.textContent = `连击 ×${count}`;
+            document.body.appendChild(combo);
+            
+            setTimeout(() => combo.remove(), 500);
+        }
+
+        // 检查游戏结束
+        function checkGameEnd() {
+            if (game.score >= game.targetScore) {
+                gameWin();
+            } else if (game.moves <= 0) {
+                gameLose();
+            }
+        }
+
+        // 胜利
+        function gameWin() {
+            game.isPlaying = false;
+            saveHighScore();
+            
+            document.getElementById('resultTitle').textContent = '通关成功！';
+            document.getElementById('finalScore').textContent = game.score;
+            document.getElementById('bonusDisplay').textContent = `完美通关！`;
+            document.getElementById('resultOverlay').style.display = 'flex';
+            
+            if (game.level < levels.length) {
+                document.getElementById('nextLevelBtn').style.display = 'inline-block';
+            } else {
+                document.getElementById('nextLevelBtn').style.display = 'none';
+            }
+        }
+
+        // 失败
+        function gameLose() {
+            game.isPlaying = false;
+            
+            document.getElementById('resultTitle').textContent = '挑战失败';
+            document.getElementById('finalScore').textContent = game.score;
+            document.getElementById('bonusDisplay').textContent = `还差 ${game.targetScore - game.score} 分`;
+            document.getElementById('resultOverlay').style.display = 'flex';
+            document.getElementById('nextLevelBtn').style.display = 'none';
+        }
+
+        // 下一关
+        function nextLevel() {
+            if (game.level < levels.length) {
+                game.level++;
+                setupLevel();
+                document.getElementById('resultOverlay').style.display = 'none';
+                game.isPlaying = true;
+            }
+        }
+
+        // 重置关卡
+        function resetLevel() {
+            setupLevel();
+            document.getElementById('resultOverlay').style.display = 'none';
+            game.isPlaying = true;
+        }
+
+        // 退出游戏
+        function exitGame() {
+            document.getElementById('startScreen').style.display = 'block';
+            document.getElementById('navbar').style.display = 'none';
+            document.getElementById('gameArea').style.display = 'none';
+            document.getElementById('infoBar').style.display = 'none';
+            document.getElementById('resultOverlay').style.display = 'none';
+            game.isPlaying = false;
+        }
+
+        // 提示功能
+        function showHint() {
+            if (game.hintCooldown > 0) return;
+            
+            for (let i = 0; i < 8; i++) {
+                for (let j = 0; j < 8; j++) {
+                    const color = game.board[i][j];
+                    game.selected = [];
+                    findConnected(i, j, color);
+                    
+                    if (game.selected.length >= 3) {
+                        highlightSelected();
+                        game.hintCooldown = 30;
+                        
+                        const cooldownInterval = setInterval(() => {
+                            game.hintCooldown--;
+                            document.getElementById('hintBtn').textContent = `💡 提示 (${game.hintCooldown}s)`;
+                            if (game.hintCooldown <= 0) {
+                                document.getElementById('hintBtn').textContent = '💡 提示 (30s)';
+                                clearInterval(cooldownInterval);
+                            }
+                        }, 1000);
+                        
+                        return;
+                    }
+                }
+            }
+        }
+
+        // 音效开关
+        function toggleSound() {
+            game.soundEnabled = !game.soundEnabled;
+            document.getElementById('soundBtn').textContent = game.soundEnabled ? '🔊 音效' : '🔇 静音';
+        }
+
+        // 关卡选择
+        function showLevelSelect() {
+            alert('关卡选择功能开发中...\n当前可玩关卡：1-5');
+        }
+
+        // 保存最高分
+        function saveHighScore() {
+            const current = localStorage.getItem('highScore') || 0;
+            if (game.score > current) {
+                localStorage.setItem('highScore', game.score);
+                document.getElementById('highScore').textContent = game.score;
+            }
+        }
+
+        // 加载最高分
+        function loadHighScore() {
+            const high = localStorage.getItem('highScore') || 0;
+            document.getElementById('highScore').textContent = high;
+        }
+
+        // 初始化
+        initGame();
+    </script>
+</body>
+</html>
